@@ -1,11 +1,10 @@
 # Arduino IDE Windows Installer
 this repository contains the Nullsoft Scriptable Install System (NSIS) script used to create the Windows installer of Arduino IDE.
 
-## Tools
+## Tools and Requirements
 * NSIS 2.46 can be downloaded here: http://nsis.sourceforge.net/Download
 * File Association plugin for NSIS (include in this repo) under Plugins
 * License file: license.txt
-* Icon file: icon.ico
 
 
 ## Instructions
@@ -32,6 +31,8 @@ Unzip the Arduino IDE .zip file (that comes from ant building in windows) into t
 `arduino-X.Y.Z` where `X.Y.Z` is the version number of the IDE that you are releasing.
 
 Change with the same version number the variable `PRODUCT_VERSION` inside the script file.
+
+Put the `FileAssociation.nsh` plugin into the `Include` folder of NSIS: `C:\Programs Files\NSIS\Include\`
 
 ## Start Building
 Open NSIS, load the script file and click the compile button. The .exe final installer will be created inside the Working Directory
