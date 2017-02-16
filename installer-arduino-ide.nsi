@@ -4,20 +4,20 @@
 
 !define PRODUCT_NAME "Arduino"
 !define PRODUCT_EXE "arduino.exe"
-!define PRODUCT_VERSION 1.7.8
+!define PRODUCT_VERSION 1.8.1
 !define PRODUCT_PUBLISHER "Arduino Srl"
 !define PRODUCT_WEB_SITE "http://www.arduino.org"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define LOCAL_FILES_PATH "C:\Users\arturo\Desktop\ARDUINO_IDE_win32"
+!define LOCAL_FILES_PATH "C:\Users\myuser\ArduinoInstaller"
 !define PATH_ICON "${LOCAL_FILES_PATH}\files\arduino-${PRODUCT_VERSION}\lib"
 !define LICENSE_PATH "${LOCAL_FILES_PATH}"
 !define SOURCE_PATH "${LOCAL_FILES_PATH}\files\arduino-${PRODUCT_VERSION}"
 
 SetCompressor /SOLID lzma
 Name "${PRODUCT_NAME}"
-OutFile "arduino-${PRODUCT_VERSION}.org-windows.exe"
+OutFile "arduino-${PRODUCT_VERSION}-windows.exe"
 LoadLanguageFile "${NSISDIR}\Contrib\Language files\English.nlf"
 InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
 Icon "${PATH_ICON}\arduino_icon.ico" ;------->file icona
@@ -43,13 +43,15 @@ SectionEnd
 Section "Install USB drivers" SEC02
   ${IF} ${RunningX64}
     DetailPrint "Installing 64 bit drivers"
-    ExecWait "$INSTDIR\drivers\dpinst-amd64.exe"
+    ExecWait '"$INSTDIR\drivers\dpinst-amd64.exe" /LM /SA /SW'
+    DetailPrint "Installing CH210X 64 bit drivers..."
+    ExecWait '"$INSTDIR\drivers\dpinst-amd64.exe" /LM /SA /SW /path "$INSTDIR\drivers\CP210x_6.7.4"'
   ${ELSE}
     DetailPrint "Installing 32 bit drivers"
-    ExecWait "$INSTDIR\drivers\dpinst-x86.exe"
+    ExecWait '"$INSTDIR\drivers\dpinst-x86.exe" /LM /SA /SW'
+    DetailPrint "Installing CH210X 32 bit drivers"
+    ExecWait '"$INSTDIR\drivers\dpinst-x86.exe" /LM /SA /SW /path "$INSTDIR\drivers\CP210x_6.7.4"'
   ${ENDIF}
-  DetailPrint "Installing Atmel drivers"
-  ExecWait "$INSTDIR\drivers\driver-atmel-bundle-7.0.712.exe"
 SectionEnd
 
 Section "Create Start Menu shortcut" SEC03
@@ -84,17 +86,17 @@ Section -Post
 SectionEnd
 
 Function .onInit
-  ;per vedere se il software è già presente sul pc
+  ;to check if the software is already installed
   Var /GLOBAL version
   ReadRegStr $R0 HKLM \
   "${PRODUCT_UNINST_KEY}" \
   "UninstallString"
   StrCmp $R0 "" done
-  ;per conoscere la versione del software installato
+  ;to detect the installed software release
   ReadRegStr $version HKLM \
   "${PRODUCT_UNINST_KEY}" \
   "DisplayVersion"
-  
+
   MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION \
     "${PRODUCT_NAME} version $version is already installed and must be uninstalled before you install this version. This won't affect scketches or libraries in the sketch directory. $\n$\nClick `OK` to uninstall from: $\n$\n$\nClick 'Cancel' if you have files in the install directory that you wish to keep (most users don't). Copy them somewhere else re-run the installer."\
   IDOK uninst
@@ -124,10 +126,10 @@ FunctionEnd
 
 Section Uninstall
   MessageBox MB_OKCANCEL "Warning: All existing files in $INSTDIR will be deleted. This includes files and folders present before or added since you installed the Arduino software." IDYES uninstall_file IDCANCEL not_uninstall
-  
+
   uninstall_file:
   RMDir /r "$INSTDIR"
-  
+
   DetailPrint "Remove registry keys..."
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
@@ -139,7 +141,7 @@ Section Uninstall
   Delete "C:\Users\Public\Desktop\Arduino.lnk"
   SetAutoClose false
   return
-  
+
   not_uninstall:
   Abort
 SectionEnd
